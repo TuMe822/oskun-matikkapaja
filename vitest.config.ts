@@ -1,5 +1,5 @@
 import { defineConfig, mergeConfig } from 'vitest/config'
-import viteConfig from './vite.config'
+import viteConfig from './vite.config.ts'
 
 // Testiasetukset erillään, vite.config.ts pysyy ennallaan.
 export default mergeConfig(
