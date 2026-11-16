@@ -1,1 +1,198 @@
-/* Perustyylit ja teema lisätään seuraavassa commitissa. */
+/* Oskun Matikkapaja 1.0 – perustyylit ja laventeliteema.
+   Värit on valittu Oskun omien värien mukaan (keltainen paita, laventeli tausta).
+   Kontrastit on tarkistettu: teksti vähintään 4.5:1 (WCAG AA). */
+
+:root {
+  /* Värit – nimet kertovat käyttötarkoituksen, eivät sävyä */
+  --color-ink: #2e2a5a;           /* leipäteksti, 12:1 taustaa vasten */
+  --color-muted: #5f5a85;         /* toissijainen teksti, 5.8:1 */
+  --color-bg: #f6f3ff;
+  --color-surface: #ffffff;
+  --color-line: #e1daf5;
+  --color-primary: #5b4bc8;       /* painikkeet, valkoinen teksti 6.4:1 */
+  --color-primary-dark: #3c3489;  /* otsikot */
+  --color-primary-light: #e6e0ff;
+  --color-accent: #ffcd3c;        /* Oskun keltainen, tumma teksti 8.8:1 */
+  --color-accent-light: #fff3c7;
+  --color-success: #24783d;       /* oikein, valkoinen teksti 5.5:1 */
+  --color-danger: #b23c26;        /* väärin, 5.4:1 */
+  --color-focus: #2f6fd6;
+
+  /* Muodot ja välit */
+  --radius: 18px;
+  --radius-sm: 12px;
+  --shadow: 0 2px 0 rgba(46, 42, 90, 0.05), 0 8px 24px rgba(60, 52, 137, 0.09);
+  --space: 16px;
+  --tap-min: 48px;                /* pienin kosketettava koko (Apple 44px, Google 48px) */
+
+  /* Fontit: järjestelmän pyöreät fontit, ei ulkoisia latauksia */
+  --font: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+  /* iPhonen lovi ja kotipalkki */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* iOS ei suurenna tekstiä itsestään vaakatilassa */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font);
+  font-size: 1.0625rem;           /* 17px */
+  line-height: 1.45;
+  color: var(--color-ink);
+  background: var(--color-bg);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;    /* ei "kuminauhaa", joka siirtää näkymää kesken laskun */
+}
+
+#root {
+  min-height: 100dvh;
+  padding: calc(var(--space) / 2 + var(--safe-top)) calc(var(--space) + var(--safe-right))
+    calc(var(--space) + var(--safe-bottom)) calc(var(--space) + var(--safe-left));
+}
+
+h1,
+h2,
+h3 {
+  margin: 0.4em 0;
+  line-height: 1.2;
+  color: var(--color-primary-dark);
+}
+
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+
+p { margin: 0.4em 0; }
+
+img { max-width: 100%; }
+
+/* ---------------------------------------------------------------------------
+   iPad- ja iPhone-säännöt (opittu versiosta 0.3.x)
+
+   1. touch-action: manipulation kaikkiin painettaviin. Estää tuplanapautuksen
+      zoomin, joten nopea toinen napautus ei suurenna sivua. Nipistyszoomaus
+      toimii edelleen (saavutettavuus).
+   2. Ei :active-muunnoksia (transform/filter). Safari piirsi painikkeen
+      uudelleen kesken napautuksen, ja ensimmäinen painallus katosi.
+   3. Ei overflow: hidden -korteissa, joissa on painikkeita, eikä fieldset-
+      elementtiä painikeryhmissä. Molemmat aiheuttivat iPadilla saman ongelman.
+   4. Syöttökentissä vähintään 16px fontti, muuten iOS zoomaa kenttään.
+   5. Ei smooth scrollia ohjelmallisissa siirroissa.
+   --------------------------------------------------------------------------- */
+
+button,
+a,
+input,
+select,
+label,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+input,
+select,
+textarea {
+  font-size: max(16px, 1rem);
+}
+
+button {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: 0 1.25rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Painalluksen palaute vain värillä, ei muunnoksilla (sääntö 2) */
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+  }
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Apuluokat */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.muted { color: var(--color-muted); }
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Sivun leveys: puhelimella koko leveys, tabletilla keskitetty */
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* Tabletti (iPad pystyssä 768px+) */
+@media (min-width: 700px) {
+  body { font-size: 1.125rem; }
+  h1 { font-size: 2rem; }
+  .page { max-width: 720px; }
+  :root { --space: 24px; --tap-min: 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
