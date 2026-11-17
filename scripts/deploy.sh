@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
-# Oskun Matikkapaja 1.0 – julkaisu osoitteeseen https://3lm.fi/matikkapaja/
-#
-# Käyttö (TinyMonkeyllä, repon kansiossa):
-#   bash scripts/deploy.sh             julkaise nykyinen commit
-#   bash scripts/deploy.sh --rollback  palaa edelliseen julkaisuun
-#
-# Jokainen julkaisu menee omaan kansioonsa releases/-hakemistoon, ja käytössä
-# oleva versio vaihdetaan symlinkillä yhdellä atomisella siirrolla. Viisi
-# uusinta julkaisua säilytetään, joten paluu edelliseen on aina mahdollinen.
+# Deploy to https://3lm.fi/matikkapaja/ (usage: see README.md)
 set -euo pipefail
 
 ROOT=${DEPLOY_ROOT:-/var/www/oskun-matikkapaja}
@@ -16,36 +8,37 @@ LINK=$ROOT/public/matikkapaja
 URL=${DEPLOY_URL:-https://3lm.fi/matikkapaja/}
 KEEP=5
 
-fail() { echo "Virhe: $*" >&2; exit 1; }
+fail() { echo "Error: $*" >&2; exit 1; }
 
+# Atomic switch: rename over the old symlink
 use_release() {
   ln -sfn "../releases/$1" "$LINK.new"
   mv -T "$LINK.new" "$LINK"
-  echo "Käytössä nyt: $1"
+  echo "Now serving: $1"
 }
 
 if [ "${1:-}" = "--rollback" ]; then
-  [ -L "$LINK" ] || fail "yhtään julkaisua ei ole vielä tehty."
+  [ -L "$LINK" ] || fail "nothing has been deployed yet."
   current=$(basename "$(readlink "$LINK")")
   previous=$(ls -1 "$RELEASES" | sort | awk -v c="$current" '$0 == c { print p; exit } { p = $0 }')
-  [ -n "$previous" ] || fail "aiempaa julkaisua ei ole."
+  [ -n "$previous" ] || fail "no earlier release to roll back to."
   use_release "$previous"
   exit 0
 fi
 
 cd "$(git rev-parse --show-toplevel)"
 
-# Julkaistaan vain sitä, mikä on oikeasti GitHubissa
-[ -z "$(git status --porcelain)" ] || fail "commitoimattomia muutoksia. Commitoi tai peru ne ensin."
-[ "$(git branch --show-current)" = main ] || fail "julkaise vain main-haarasta."
+# Only deploy what is on GitHub
+[ -z "$(git status --porcelain)" ] || fail "uncommitted changes. Commit or discard them first."
+[ "$(git branch --show-current)" = main ] || fail "deploy from the main branch only."
 git fetch --quiet origin main
-[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || fail "paikallinen main ei vastaa GitHubia. Aja git push tai git pull."
+[ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || fail "local main differs from GitHub. Run git push or git pull."
 
 sha=$(git rev-parse --short HEAD)
 name="$(date +%Y%m%d-%H%M%S)-$sha"
-echo "Julkaistaan $name"
+echo "Deploying $name"
 
-# Samat tarkistukset kuin CI:ssä
+# Same checks as CI
 npm ci --no-audit --no-fund
 npm run lint
 npm test
@@ -57,13 +50,13 @@ echo "$sha" > "$RELEASES/$name/version.txt"
 chmod -R a+rX "$RELEASES/$name"
 use_release "$name"
 
-# Vanhimmat pois, käytössä olevaa ei koskaan
+# Keep the newest releases, never the one in use
 ls -1 "$RELEASES" | sort | head -n -"$KEEP" | while read -r old; do
   [ "$old" = "$name" ] || rm -rf "${RELEASES:?}/$old"
 done
 
 if curl -fsS -o /dev/null "$URL"; then
-  echo "OK: $URL (versio $sha)"
+  echo "OK: $URL (version $sha)"
 else
-  echo "Huom: $URL ei vastannut. Tarkista Nginx." >&2
+  echo "Warning: $URL did not respond. Check Nginx." >&2
 fi
