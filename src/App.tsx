@@ -1,15 +1,16 @@
+import { Navigate, Route, Routes } from 'react-router'
+import { Home } from './pages/Home'
+import { ModeSelect } from './pages/ModeSelect'
+import { Play } from './pages/Play'
+
 function App() {
   return (
-    <main className="page">
-      <h1>Oskun Matikkapaja</h1>
-      <p className="muted">Versio 1.0 – rakenteilla</p>
-
-      <section className="card">
-        <h2>Teematesti</h2>
-        <p>Tällä kortilla tarkistetaan värit, fontit ja painikkeet puhelimella ja iPadilla.</p>
-        <button type="button">Aloita</button>
-      </section>
-    </main>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/modes" element={<ModeSelect />} />
+      <Route path="/play" element={<Play />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
