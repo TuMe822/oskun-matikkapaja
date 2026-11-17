@@ -17,12 +17,13 @@ export interface Summary {
   timeMs: number
 }
 
+// Counts problems, not tries: a retry that ends correct is one correct problem
 export function summarize(attempts: readonly Attempt[]): Summary {
   return attempts.reduce<Summary>(
     (sum, attempt) => ({
-      total: sum.total + 1,
-      correct: sum.correct + (attempt.correct ? 1 : 0),
-      points: sum.points + pointsFor(attempt),
+      total: sum.total + (attempt.final ? 1 : 0),
+      correct: sum.correct + (attempt.final && attempt.correct ? 1 : 0),
+      points: sum.points + (attempt.final ? pointsFor(attempt) : 0),
       timeMs: sum.timeMs + attempt.timeMs,
     }),
     { total: 0, correct: 0, points: 0, timeMs: 0 },

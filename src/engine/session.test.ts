@@ -70,8 +70,78 @@ describe('createSession', () => {
     expect(seen).toEqual([0, 1, 2])
   })
 
-  it('rejects a length that is not a positive integer', () => {
+  it('rejects a length or try count that is not a positive integer', () => {
     expect(() => createSession({ picker: fixedPicker, length: 0 })).toThrow(RangeError)
     expect(() => createSession({ picker: fixedPicker, length: 1.5 })).toThrow(RangeError)
+    expect(() => createSession({ picker: fixedPicker, maxTries: 0 })).toThrow(RangeError)
+  })
+})
+
+describe('createSession with retries', () => {
+  // Distinct problems so we can tell whether the session moved on
+  const counting = (): Picker => {
+    let n = 0
+    return { next: () => createProblem(++n, 10) }
+  }
+
+  it('keeps the problem and the hints after a first wrong answer', () => {
+    const session = createSession({ picker: counting(), length: 3, maxTries: 2 })
+    session.requestHint()
+    const result = session.submit('99')
+    expect(result).toMatchObject({ retry: true, points: 0, finished: false })
+    expect(session.current).toEqual(createProblem(1, 10))
+    expect(session.hintsUsed).toBe(1)
+    expect(session.completed).toBe(0)
+  })
+
+  it('moves on after the second wrong answer', () => {
+    const session = createSession({ picker: counting(), length: 3, maxTries: 2 })
+    session.submit('99')
+    const result = session.submit('98')
+    expect(result).toMatchObject({ retry: false, finished: false })
+    expect(result?.attempt).toMatchObject({ tryNumber: 2, final: true, correct: false })
+    expect(session.current).toEqual(createProblem(2, 10))
+  })
+
+  it('records both tries so a first-try success differs from a hinted retry', () => {
+    const session = createSession({ picker: counting(), length: 2, maxTries: 2 })
+    session.submit('10') // 1 × 10: right first time
+    session.submit('99') // 2 × 10: wrong…
+    session.requestHint() // the UI gives a hint after the first mistake
+    session.submit('20') // …right on the retry
+    const summary = session.attempts.map(({ tryNumber, correct, final, hintsUsed }) => ({
+      tryNumber,
+      correct,
+      final,
+      hintsUsed,
+    }))
+    expect(summary).toEqual([
+      { tryNumber: 1, correct: true, final: true, hintsUsed: 0 },
+      { tryNumber: 1, correct: false, final: false, hintsUsed: 0 },
+      { tryNumber: 2, correct: true, final: true, hintsUsed: 1 },
+    ])
+  })
+  
+  it('scores a correct retry with the hints used', () => {
+    const session = createSession({ picker: counting(), length: 3, maxTries: 2 })
+    session.submit('99')
+    session.requestHint()
+    expect(session.submit('10')?.points).toBe(7)
+  })
+
+  it('counts the session length in problems, not tries', () => {
+    const session = createSession({ picker: counting(), length: 2, maxTries: 2 })
+    session.submit('99')
+    session.submit('10')
+    expect(session.finished).toBe(false)
+    session.submit('20')
+    expect(session.finished).toBe(true)
+    expect(session.summary()).toMatchObject({ total: 2, correct: 2 })
+  })
+
+  it('times a retry from the previous answer', () => {
+    const session = createSession({ picker: counting(), length: 1, maxTries: 2, now: clock(0, 3000, 5000) })
+    session.submit('99')
+    expect(session.submit('10')?.attempt.timeMs).toBe(2000)
   })
 })

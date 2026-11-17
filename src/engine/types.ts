@@ -12,7 +12,11 @@ export interface Attempt {
   given: number
   correct: boolean
   hintsUsed: number
-  /** Time from showing the problem to answering */
+  /** 1 for the first try, 2 for a retry */
+  tryNumber: number
+  /** Last try for this problem: the problem is either solved or revealed */
+  final: boolean
+  /** Time from showing the problem (or the previous try) to answering */
   timeMs: number
   /** Epoch ms; needed later for learning tracking and spaced repetition */
   answeredAt: number

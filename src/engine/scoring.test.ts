@@ -8,6 +8,8 @@ const attempt = (correct: boolean, hintsUsed = 0, timeMs = 1000): Attempt => ({
   given: correct ? 21 : 20,
   correct,
   hintsUsed,
+  tryNumber: 1,
+  final: true,
   timeMs,
   answeredAt: 0,
 })
@@ -34,6 +36,12 @@ describe('summarize', () => {
       points: 17,
       timeMs: 3500,
     })
+  })
+
+  it('counts a retried problem once', () => {
+    const firstTry = { ...attempt(false, 1, 2000), final: false }
+    const retry = { ...attempt(true, 1, 1000), tryNumber: 2 }
+    expect(summarize([firstTry, retry])).toEqual({ total: 1, correct: 1, points: 7, timeMs: 3000 })
   })
 
   it('is all zeros for no answers', () => {

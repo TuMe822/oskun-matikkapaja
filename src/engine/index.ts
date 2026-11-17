@@ -1,5 +1,6 @@
 // Public API of the learning engine: no React, no browser APIs
 export { parseAnswer } from './answer'
+export { hintFor, type Hint } from './hints'
 export { createBagPicker } from './picker'
 export { createProblem, MAX_FACTOR, MAX_TABLE, MIN_TABLE, problemKey, problemsFor } from './problems'
 export { seededRandom, shuffle } from './random'
