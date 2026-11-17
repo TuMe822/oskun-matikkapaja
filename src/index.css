@@ -201,6 +201,17 @@ button:disabled {
 
 .push-bottom { margin-top: auto; }
 
+/* Keeps the main action in view when the page scrolls on small phones */
+.action-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding: 12px 0 calc(12px + var(--safe-bottom));
+  background: linear-gradient(to bottom, transparent, var(--color-bg) 16px);
+}
+
 .page-header {
   display: flex;
   align-items: center;

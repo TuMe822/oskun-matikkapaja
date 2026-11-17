@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { ChoiceGroup } from '../components/ChoiceGroup'
+import { Icon } from '../components/Icon'
 import { format } from '../i18n/format'
 import { useI18n } from '../i18n/context'
 import { COUNTS, MODE_IDS, MODES, TABLES, TIMES, type ModeId } from '../modes'
-import { Icon } from '../components/Icon'
 
 export function ModeSelect() {
   const { t } = useI18n()
@@ -62,9 +62,11 @@ export function ModeSelect() {
         />
       )}
 
-      <button type="button" className="push-bottom" onClick={start}>
-        {t.options.start}
-      </button>
+      <div className="action-bar">
+        <button type="button" onClick={start}>
+          {t.options.start}
+        </button>
+      </div>
     </main>
   )
 }
