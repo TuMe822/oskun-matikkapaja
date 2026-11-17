@@ -40,8 +40,8 @@ describe('Mode selection', () => {
     renderAt('/modes')
     fireEvent.click(screen.getByRole('button', { name: 'Aloita' }))
     expect(heading('Harjoittele')).toBeInTheDocument()
-    expect(screen.getByText('1:n kertotaulu')).toBeInTheDocument()
-    expect(screen.getByText('10 laskua')).toBeInTheDocument()
+    expect(screen.getByText(/^\d+ × 1 =$/)).toBeInTheDocument()
+    expect(screen.getByText('1 / 10')).toBeInTheDocument()
   })
 
   it('passes the chosen table and count on', () => {
@@ -49,8 +49,8 @@ describe('Mode selection', () => {
     fireEvent.click(screen.getByRole('button', { name: '7' }))
     fireEvent.click(screen.getByRole('button', { name: '20 laskua' }))
     fireEvent.click(screen.getByRole('button', { name: 'Aloita' }))
-    expect(screen.getByText('7:n kertotaulu')).toBeInTheDocument()
-    expect(screen.getByText('20 laskua')).toBeInTheDocument()
+    expect(screen.getByText(/^\d+ × 7 =$/)).toBeInTheDocument()
+    expect(screen.getByText('1 / 20')).toBeInTheDocument()
   })
 
   it('shows only the options the mode needs', () => {

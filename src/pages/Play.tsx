@@ -1,16 +1,25 @@
+import { useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router'
 import { Osku } from '../components/Osku'
 import { format } from '../i18n/format'
 import { useI18n } from '../i18n/context'
-import { isModeId } from '../modes'
+import { isModeId, practicePlan } from '../modes'
+import { Practice } from './Practice'
 
-// Placeholder until the practice view is built
 export function Play() {
   const { t } = useI18n()
   const [params] = useSearchParams()
+  // A new key starts a fresh session for "Practise again"
+  const [round, setRound] = useState(0)
   const mode = params.get('mode')
   if (!isModeId(mode)) return <Navigate to="/modes" replace />
 
+  const plan = practicePlan(mode, params)
+  if (plan) {
+    return <Practice key={round} title={t.modes[mode].name} plan={plan} onAgain={() => setRound((r) => r + 1)} />
+  }
+
+  // Modes with their own view later: show the choices for now
   const table = params.get('table')
   const count = params.get('count')
   const time = params.get('time')

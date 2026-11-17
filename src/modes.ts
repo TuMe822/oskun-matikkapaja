@@ -25,3 +25,22 @@ export const TIMES = [30, 60, 120] as const
 export function isModeId(value: string | null): value is ModeId {
   return value !== null && (MODE_IDS as readonly string[]).includes(value)
 }
+
+export interface PracticePlan {
+  tables: number[]
+  count: number
+}
+
+/**
+ * Settings for the basic practice view. Learn, speed and mastery get their
+ * own views later, so they return null for now.
+ */
+export function practicePlan(mode: ModeId, params: URLSearchParams): PracticePlan | null {
+  if (mode === 'learn' || mode === 'speed' || mode === 'mastery') return null
+  const table = Number(params.get('table'))
+  const count = Number(params.get('count'))
+  return {
+    tables: MODES[mode].table && (TABLES as readonly number[]).includes(table) ? [table] : [...TABLES],
+    count: (COUNTS as readonly number[]).includes(count) ? count : COUNTS[0],
+  }
+}
